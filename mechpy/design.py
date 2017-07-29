@@ -6,6 +6,7 @@ scripts and boilerplate code to use for mechanical engineering design tasks
 __author__ = 'Neal Gordon <nealagordon@gmail.com>'
 __date__ =   '2016-09-06'
 
+import math
 import pandas as pd
 import numpy as np
 from numpy import pi, array
@@ -77,10 +78,37 @@ def fastened_joint(fx, fy, P, l):
     return df
 
 
-def mohr(s):
-    pass
+def mohr(sx, sy, txy):
+    cen = (sx + sy)*.5
+    rad = math.sqrt(((sx - sy)*.5)**2 +  txy ** 2)
+    s1 = round(cen + rad, ndigits=2)
+    s2 = round(cen - rad, ndigits=2)
+
+    # Plotting
+    off = .20*rad
+    xaxis = np.linspace(cen-rad-off, cen+rad+off)
+    yaxis = np.linspace(-(off+rad), +off+rad)
+    plt.plot(xaxis, 0*xaxis)
+    plt.plot(cen+0*yaxis, yaxis)
+    t = np.arange(0, np.pi * 2.0, 0.01)
+    x = cen+rad * np.cos(t)
+    y = rad * np.sin(t)
+    #img = plt.imread("mohr.png")    # TODO improve bg image
+    #plt.imshow(img, extent=[(cen-rad), cen+rad, -rad, rad])
+    plt.plot(x, y)
+    ax = plt.gca()
+    ax.set_aspect('equal')  # need circle, not a ellipse
+    plt.annotate('$\sigma_1=$'+str(s1), xy=(cen+rad, 0), xytext=(cen+rad/2, rad/2),
+                   arrowprops=dict ( facecolor='black', shrink=0.01 )
+                  )
+    plt.annotate('$\sigma_2=$'+ str(s2), xy=(cen-rad, 0), xytext=(cen - rad/2, rad / 2),
+                   arrowprops=dict ( facecolor='red', shrink=0.01 )
+                  )
+    #TODO annotate max shear
+    plt.show()
 
 
 
 if __name__=='__main__':
-    shear_bending()
+    #shear_bending()
+    mohr (10, 40, 15)
