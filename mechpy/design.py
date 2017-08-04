@@ -10,6 +10,7 @@ import math
 import pandas as pd
 import numpy as np
 from numpy import pi, array
+from numpy.linalg import eig
 import matplotlib.pyplot as plt
 
 def gear():
@@ -107,8 +108,37 @@ def mohr(sx, sy, txy):
     #TODO annotate max shear
     plt.show()
 
+def mohr3D(sxx,syy,szz,sxy,sxz,syz):
+    stress = np.array([[sxx,sxy,sxz],
+                       [sxy,syy,syz],
+                       [sxz,syz,szz]])
+    eign  = eig(stress)
+    pstress =eign[0]
+    pstress.sort()
+
+    # define circles
+    circ = np.zeros ( (3, 2), dtype=float )  # 3 circles in order center,radius
+    circ[ 0 ][ 0 ] = .5 * (pstress[ 2 ] + pstress[ 0 ])
+    circ[ 0 ][ 1 ] = .5 * (pstress[ 2 ] - pstress[ 0 ])
+    circ[ 1 ][ 0 ] = .5 * (pstress[ 1 ] + pstress[ 0 ])
+    circ[ 1 ][ 1 ] = .5 * (pstress[ 1 ] - pstress[ 0 ])
+    circ[ 2 ][ 0 ] = .5 * (pstress[ 2 ] + pstress[ 1 ])
+    circ[ 2 ][ 1 ] = .5 * (pstress[ 2 ] - pstress[ 1 ])
+
+    # Plotting
+    circle1 = plt.Circle((circ[0][0],0), radius = circ[0][1], color ='red')
+    circle2 = plt.Circle((circ[1][0],0), radius = circ[1][1], color ='blue')
+    circle3 = plt.Circle((circ[2][0],0), radius = circ[2][1], color ='green')
+    ax = plt.gca()
+    ax.add_patch(circle1)
+    ax.add_patch ( circle2 )
+    ax.add_patch ( circle3 )
+    # TODO Add axes and annotate
+    plt.axis('scaled')
+    plt.show()
 
 
 if __name__=='__main__':
     #shear_bending()
-    mohr (10, 40, 15)
+    #mohr(10, 40, 15)
+    mohr3D(10, -10, 10, -5, 5, -5)
