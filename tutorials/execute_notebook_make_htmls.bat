@@ -1,5 +1,6 @@
-:: I could not figure out how to make a batch script loop over *.ipynb files and run jupyter commands
-:: I should probably just make a python script to do it
+:: change console to the current working directory
+Pushd "%~dp0"
 
-jupyter nbconvert --execute *.ipynb
+::loops for all *.ipynb files 
+for %%i in (*.ipynb) do jupyter nbconvert --execute %%i
 
