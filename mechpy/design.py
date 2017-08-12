@@ -6,9 +6,11 @@ scripts and boilerplate code to use for mechanical engineering design tasks
 __author__ = 'Neal Gordon <nealagordon@gmail.com>'
 __date__ =   '2016-09-06'
 
+import math
 import pandas as pd
 import numpy as np
 from numpy import pi, array
+from numpy.linalg import eig
 import matplotlib.pyplot as plt
 
 def gear():
@@ -77,10 +79,66 @@ def fastened_joint(fx, fy, P, l):
     return df
 
 
-def mohr(s):
-    pass
+def mohr(sx, sy, txy):
+    cen = (sx + sy)*.5
+    rad = math.sqrt(((sx - sy)*.5)**2 +  txy ** 2)
+    s1 = round(cen + rad, ndigits=2)
+    s2 = round(cen - rad, ndigits=2)
 
+    # Plotting
+    off = .20*rad
+    xaxis = np.linspace(cen-rad-off, cen+rad+off)
+    yaxis = np.linspace(-(off+rad), +off+rad)
+    plt.plot(xaxis, 0*xaxis)
+    plt.plot(cen+0*yaxis, yaxis)
+    t = np.arange(0, np.pi * 2.0, 0.01)
+    x = cen+rad * np.cos(t)
+    y = rad * np.sin(t)
+    #img = plt.imread("mohr.png")    # TODO improve bg image
+    #plt.imshow(img, extent=[(cen-rad), cen+rad, -rad, rad])
+    plt.plot(x, y)
+    ax = plt.gca()
+    ax.set_aspect('equal')  # need circle, not a ellipse
+    plt.annotate('$\sigma_1=$'+str(s1), xy=(cen+rad, 0), xytext=(cen+rad/2, rad/2),
+                   arrowprops=dict ( facecolor='black', shrink=0.01 )
+                  )
+    plt.annotate('$\sigma_2=$'+ str(s2), xy=(cen-rad, 0), xytext=(cen - rad/2, rad / 2),
+                   arrowprops=dict ( facecolor='red', shrink=0.01 )
+                  )
+    #TODO annotate max shear
+    plt.show()
+
+def mohr3D(sxx,syy,szz,sxy,sxz,syz):
+    stress = np.array([[sxx,sxy,sxz],
+                       [sxy,syy,syz],
+                       [sxz,syz,szz]])
+    eign  = eig(stress)
+    pstress =eign[0]
+    pstress.sort()
+
+    # define circles
+    circ = np.zeros ( (3, 2), dtype=float )  # 3 circles in order center,radius
+    circ[ 0 ][ 0 ] = .5 * (pstress[ 2 ] + pstress[ 0 ])
+    circ[ 0 ][ 1 ] = .5 * (pstress[ 2 ] - pstress[ 0 ])
+    circ[ 1 ][ 0 ] = .5 * (pstress[ 1 ] + pstress[ 0 ])
+    circ[ 1 ][ 1 ] = .5 * (pstress[ 1 ] - pstress[ 0 ])
+    circ[ 2 ][ 0 ] = .5 * (pstress[ 2 ] + pstress[ 1 ])
+    circ[ 2 ][ 1 ] = .5 * (pstress[ 2 ] - pstress[ 1 ])
+
+    # Plotting
+    circle1 = plt.Circle((circ[0][0],0), radius = circ[0][1], color ='red')
+    circle2 = plt.Circle((circ[1][0],0), radius = circ[1][1], color ='blue')
+    circle3 = plt.Circle((circ[2][0],0), radius = circ[2][1], color ='green')
+    ax = plt.gca()
+    ax.add_patch(circle1)
+    ax.add_patch ( circle2 )
+    ax.add_patch ( circle3 )
+    # TODO Add axes and annotate
+    plt.axis('scaled')
+    plt.show()
 
 
 if __name__=='__main__':
-    shear_bending()
+    #shear_bending()
+    #mohr(10, 40, 15)
+    mohr3D(10, -10, 10, -5, 5, -5)
